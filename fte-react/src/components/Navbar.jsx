@@ -91,33 +91,33 @@ export default function Navbar() {
                 <NavigationMenu className="hidden md:flex justify-end items-center gap-x-6">
                     <NavigationMenuList className="flex gap-x-6">
                         <NavigationMenuItem>
-                            <NavigationMenuLink asChild>
+                            <Button asChild variant="link">
                                 <Link to="/" className="px-3 py-2 text-white">
                                     Home
                                 </Link>
-                            </NavigationMenuLink>
+                            </Button>
                         </NavigationMenuItem>
 
                         <NavigationMenuItem>
-                            <NavigationMenuLink asChild>
+                            <Button asChild variant="link">
                                 <Link
                                     to="/about"
                                     className="px-3 py-2 text-white hover:text-gray-300"
                                 >
                                     About Us
                                 </Link>
-                            </NavigationMenuLink>
+                            </Button>
                         </NavigationMenuItem>
 
                         <NavigationMenuItem>
-                            <NavigationMenuLink asChild>
+                            <Button asChild variant="link">
                                 <Link
                                     to="/contact"
                                     className="px-3 py-2 text-white hover:text-gray-300"
                                 >
                                     Contact
                                 </Link>
-                            </NavigationMenuLink>
+                            </Button>
                         </NavigationMenuItem>
 
                         <NavigationMenuItem>
