@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback,useEffect, useState } from "react";
 import {
     CartesianGrid,
     Legend,
@@ -80,9 +80,8 @@ export default function Overview() {
         });
     }, [dateRange]);
 
-    const fetchTransactions = async () => {
+    const fetchTransactions = useCallback(async () => {
         try {
-            // Convert date range to ISO strings (your existing timezone-safe logic)
             const startLocal = new Date(dateRange.from);
             startLocal.setHours(0, 0, 0, 0);
             const startDate = new Date(
@@ -113,7 +112,7 @@ export default function Overview() {
             let expenses = [];
 
             if (
-                selectedCategories.length === 0 || // no filter → fetch both
+                selectedCategories.length === 0 ||
                 (incomeCategories.length > 0 && expenseCategories.length > 0)
             ) {
                 const [incomeRes, expenseRes] = await Promise.all([
@@ -140,12 +139,7 @@ export default function Overview() {
         } catch (err) {
             console.error("Error fetching filtered transactions:", err);
         }
-    };
-
-    // Fetch whenever dateRange or categories change
-    useEffect(() => {
-        fetchTransactions();
-    }, [dateRange, selectedCategories, refreshTrigger]);
+    }, [dateRange, selectedCategories]);
 
     // const fetchTransactions = async () => {
     //     try {
