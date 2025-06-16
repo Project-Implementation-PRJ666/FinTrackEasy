@@ -47,7 +47,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 export default function CategoryFilter({
     selectedCategories = [],
     onChange,
-    dateRange,
+    dateRange = {},
     refreshTrigger = 0,
 }) {
     const [incomeCategories, setIncomeCategories] = useState([]);

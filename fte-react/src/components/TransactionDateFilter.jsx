@@ -10,18 +10,24 @@ function formatDateRange(range) {
     return `${range.from.toLocaleDateString(undefined, options)} - ${range.to.toLocaleDateString(undefined, options)}`;
 }
 
-export default function TransactionDateFilter({ dateRange, onChange }) {
+export default function TransactionDateFilter({ dateRange = {}, onChange }) {
     const [dateText, setDateText] = useState("Select date");
     const [open, setOpen] = useState(false);
-    const lastClickTime = useRef(null);
+
+    const lastSelectedDate = useRef(null);
 
     const handleDateSelect = (range) => {
-        const now = Date.now();
-        if (lastClickTime.current && now - lastClickTime.current < 300) {
-            // Detected rapid double-click; ignore so that the react date-picker doesn't initiate an action
-            return;
+        if (range?.from && range?.to && range.from.getTime() === range.to.getTime()) {
+            if (
+                lastSelectedDate.current &&
+                lastSelectedDate.current.getTime() === range.from.getTime()
+            ) {
+                return;
+            }
+            lastSelectedDate.current = range.from;
+        } else {
+            lastSelectedDate.current = null;
         }
-        lastClickTime.current = now;
         onChange(range);
     };
 
