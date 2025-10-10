@@ -268,251 +268,254 @@ export default function Overview() {
     }
 
     const handleGenerateReport = async () => {
-        const doc = new jsPDF("p", "pt", "a4");
-        let y = 40;
-        const pageWidth = doc.internal.pageSize.getWidth();
-        const margin = 40;
-        const maxY = doc.internal.pageSize.getHeight() - 40;
+        try {
+            const doc = new jsPDF("p", "pt", "a4");
+            let y = 40;
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const margin = 40;
+            const maxY = doc.internal.pageSize.getHeight() - 40;
 
-        const formatCurrency = (value) =>
-            `$${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
+            const formatCurrency = (value) =>
+                `$${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
 
-        const addPageNumber = (pageNum) => {
-            doc.setFontSize(10);
-            doc.setTextColor("#666");
-            doc.text(`Page ${pageNum}`, pageWidth / 2, maxY, { align: "center" });
-        };
+            const addPageNumber = (pageNum) => {
+                doc.setFontSize(10);
+                doc.setTextColor("#666");
+                doc.text(`Page ${pageNum}`, pageWidth / 2, maxY, { align: "center" });
+            };
 
-        let pageNum = 1;
+            let pageNum = 1;
 
-        // Title
-        doc.setFontSize(20);
-        doc.setTextColor("#333");
-        doc.setFont("helvetica", "bold");
-        doc.text("User Financial Report", pageWidth / 2, y, { align: "center" });
-        y += 30;
-
-        // Date Range Badge
-        const dateRangeText = `Date Range: ${format(dateRange.from, "PPP")} - ${format(dateRange.to, "PPP")}`;
-        const badgeWidth = doc.getTextWidth(dateRangeText) + 20;
-        const badgeX = (pageWidth - badgeWidth) / 2;
-        const badgeY = y - 12;
-        doc.setFillColor("#e0f2fe");
-        doc.roundedRect(badgeX, badgeY, badgeWidth, 24, 6, 6, "F");
-        doc.setFontSize(12);
-        doc.setTextColor("#0369a1");
-        doc.setFont("helvetica", "bold");
-        doc.text(dateRangeText, pageWidth / 2, y + 2, { align: "center" });
-        y += 40;
-
-        // Summary Box
-        const boxWidth = (pageWidth - margin * 2) / 3 - 10;
-        const boxHeight = 60;
-        const summaries = [
-            { label: "Total Income", value: formatCurrency(totalIncome), color: "#4ade80" },
-            { label: "Total Expenses", value: formatCurrency(totalExpenses), color: "#f87171" },
-            { label: "Balance", value: formatCurrency(balance), color: "#60a5fa" },
-        ];
-        summaries.forEach((item, idx) => {
-            const x = margin + idx * (boxWidth + 10);
-            doc.setFillColor(item.color);
-            doc.roundedRect(x, y, boxWidth, boxHeight, 8, 8, "F");
-            doc.setFontSize(12);
-            doc.setTextColor("#fff");
-            doc.setFont("helvetica", "bold");
-            doc.text(item.label, x + 10, y + 20);
-            doc.setFontSize(14);
-            doc.text(item.value, x + 10, y + 40);
-        });
-        y += boxHeight + 30;
-
-        // Capture charts
-        const captureChart = async (ref) => {
-            if (!ref.current) return null;
-
-            const svgNode = ref.current.querySelector("svg");
-            if (svgNode) {
-                const svgString = new XMLSerializer().serializeToString(svgNode);
-                return new Promise((resolve) => {
-                    const img = new Image();
-                    const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
-                    const url = URL.createObjectURL(svgBlob);
-                    img.onload = () => {
-                        const scale = 2;
-                        const canvas = document.createElement("canvas");
-                        canvas.width = img.width * scale;
-                        canvas.height = img.height * scale;
-                        const ctx = canvas.getContext("2d");
-                        ctx.scale(scale, scale);
-                        ctx.drawImage(img, 0, 0);
-                        URL.revokeObjectURL(url);
-                        resolve({
-                            dataUrl: canvas.toDataURL("image/png"),
-                            width: img.width,
-                            height: img.height,
-                        });
-                    };
-                    img.src = url;
-                });
-            }
-
-            // fallback: html2canvas
-            return html2canvas(ref.current, { scale: 2 }).then((canvas) => {
-                return {
-                    dataUrl: canvas.toDataURL("image/png"),
-                    width: canvas.width / 2,
-                    height: canvas.height / 2,
-                };
-            });
-        };
-
-        if (incomeChartRef.current && expenseChartRef.current) {
-            // Capture income chart
-            const incomeImg = await captureChart(incomeChartRef);
-            doc.setFontSize(14);
-            doc.setFont("helvetica", "bold");
+            // Title
+            doc.setFontSize(20);
             doc.setTextColor("#333");
-            doc.text("Income Chart", margin, y);
-            y += 10;
+            doc.setFont("helvetica", "bold");
+            doc.text("User Financial Report", pageWidth / 2, y, { align: "center" });
+            y += 30;
 
-            // Increase width slightly to 70%, then reduce height by 70%
-            const incomeWidth = pageWidth * 0.7;
-            const incomeHeight = (incomeImg.height / incomeImg.width) * incomeWidth * 0.7;
-            const incomeX = (pageWidth - incomeWidth) / 2;
-            doc.addImage(incomeImg.dataUrl, "PNG", incomeX, y, incomeWidth, incomeHeight);
-            y += incomeHeight + 10;
+            // Date Range Badge
+            const dateRangeText = `Date Range: ${format(dateRange.from, "PPP")} - ${format(dateRange.to, "PPP")}`;
+            const badgeWidth = doc.getTextWidth(dateRangeText) + 20;
+            const badgeX = (pageWidth - badgeWidth) / 2;
+            const badgeY = y - 12;
+            doc.setFillColor("#e0f2fe");
+            doc.roundedRect(badgeX, badgeY, badgeWidth, 24, 6, 6, "F");
+            doc.setFontSize(12);
+            doc.setTextColor("#0369a1");
+            doc.setFont("helvetica", "bold");
+            doc.text(dateRangeText, pageWidth / 2, y + 2, { align: "center" });
+            y += 40;
 
-            // Capture expense chart
-            const expenseImg = await captureChart(expenseChartRef);
-            doc.text("Expense Chart", margin, y);
-            y += 10;
-
-            // Same adjustment for expense chart
-            const expenseWidth = pageWidth * 0.7;
-            const expenseHeight = (expenseImg.height / expenseImg.width) * expenseWidth * 0.7;
-            const expenseX = (pageWidth - expenseWidth) / 2;
-            doc.addImage(expenseImg.dataUrl, "PNG", expenseX, y, expenseWidth, expenseHeight);
-            y += expenseHeight + 10;
-        }
-
-        // Top Categories Section
-        const topIncome = getTopCategories(transactions, "income");
-        const topExpenses = getTopCategories(transactions, "expense");
-
-        const tableWidth = pageWidth - margin * 2;
-        const colWidth = tableWidth / 2 - 10;
-
-        doc.setFontSize(16);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor("#000");
-        doc.text("Top Categories", pageWidth / 2, y, { align: "center" });
-        y += 24;
-
-        const drawCategoryTable = (title, data, xStart, startY) => {
-            const rowHeight = 18;
-            let yPos = startY;
-
-            doc.setFontSize(13);
-            doc.setFillColor("#3b82f6");
-            doc.setTextColor("#fff");
-            doc.roundedRect(xStart, yPos - 14, colWidth, rowHeight, 4, 4, "F");
-            doc.text(title, xStart + 10, yPos - 1);
-
-            yPos += 12; // add space after header
-
-            doc.setFontSize(11);
-            doc.setFont("helvetica", "normal");
-            data.forEach(([category, amount], index) => {
-                const isEven = index % 2 === 0;
-                if (isEven) {
-                    doc.setFillColor("#f1f5f9");
-                    doc.rect(xStart, yPos - 10, colWidth, rowHeight, "F");
-                }
-                doc.setTextColor("#000");
-                doc.text(`${index + 1}. ${category}`, xStart + 8, yPos + 4);
-                doc.text(formatCurrency(amount), xStart + colWidth - 8, yPos + 4, {
-                    align: "right",
-                });
-                yPos += rowHeight;
-            });
-        };
-
-        const tableStartY = y;
-        drawCategoryTable("Income", topIncome, margin, tableStartY);
-        drawCategoryTable("Expenses", topExpenses, margin + colWidth + 20, tableStartY);
-        y +=
-            (topIncome.length > topExpenses.length ? topIncome.length : topExpenses.length) * 18 +
-            36;
-
-        // Transactions Table
-        doc.setFontSize(16);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor("#000");
-        doc.text("Transactions", pageWidth / 2, y, { align: "center" });
-        y += 24;
-
-        const headers = ["Date", "Category", "Type", "Amount"];
-        const colWidths = [80, 180, 80, 80];
-        const tableTotalWidth = colWidths.reduce((a, b) => a + b);
-        let x = (pageWidth - tableTotalWidth) / 2;
-        doc.setFontSize(12);
-        doc.setTextColor("#fff");
-        doc.setFillColor("#3b82f6");
-        doc.rect(x, y - 12, tableTotalWidth, 20, "F");
-        headers.forEach((header, i) => {
-            doc.text(header, x + 2, y);
-            x += colWidths[i];
-        });
-        y += 20;
-        y += 4;
-
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(11);
-        let rowAlt = false;
-        for (const txn of transactions) {
-            if (y > maxY - 30) {
-                addPageNumber(pageNum);
-                doc.addPage();
-                pageNum++;
-                y = 40;
-                x = (pageWidth - tableTotalWidth) / 2;
+            // Summary Box
+            const boxWidth = (pageWidth - margin * 2) / 3 - 10;
+            const boxHeight = 60;
+            const summaries = [
+                { label: "Total Income", value: formatCurrency(totalIncome), color: "#4ade80" },
+                { label: "Total Expenses", value: formatCurrency(totalExpenses), color: "#f87171" },
+                { label: "Balance", value: formatCurrency(balance), color: "#60a5fa" },
+            ];
+            summaries.forEach((item, idx) => {
+                const x = margin + idx * (boxWidth + 10);
+                doc.setFillColor(item.color);
+                doc.roundedRect(x, y, boxWidth, boxHeight, 8, 8, "F");
                 doc.setFontSize(12);
                 doc.setTextColor("#fff");
-                doc.setFillColor("#3b82f6");
-                doc.rect(x, y - 12, tableTotalWidth, 20, "F");
-                headers.forEach((header, i) => {
-                    doc.text(header, x + 2, y);
-                    x += colWidths[i];
+                doc.setFont("helvetica", "bold");
+                doc.text(item.label, x + 10, y + 20);
+                doc.setFontSize(14);
+                doc.text(item.value, x + 10, y + 40);
+            });
+            y += boxHeight + 30;
+
+            // Capture charts
+            const captureChart = async (ref) => {
+                if (!ref.current) return null;
+
+                const svgNode = ref.current.querySelector("svg");
+                if (svgNode) {
+                    const svgString = new XMLSerializer().serializeToString(svgNode);
+                    return new Promise((resolve) => {
+                        const img = new Image();
+                        const svgBlob = new Blob([svgString], {
+                            type: "image/svg+xml;charset=utf-8",
+                        });
+                        const url = URL.createObjectURL(svgBlob);
+                        img.onload = () => {
+                            const scale = 2;
+                            const canvas = document.createElement("canvas");
+                            canvas.width = img.width * scale;
+                            canvas.height = img.height * scale;
+                            const ctx = canvas.getContext("2d");
+                            ctx.scale(scale, scale);
+                            ctx.drawImage(img, 0, 0);
+                            URL.revokeObjectURL(url);
+                            resolve({
+                                dataUrl: canvas.toDataURL("image/png"),
+                                width: img.width,
+                                height: img.height,
+                            });
+                        };
+                        img.src = url;
+                    });
+                }
+
+                // fallback: html2canvas
+                return html2canvas(ref.current, { scale: 2 }).then((canvas) => {
+                    return {
+                        dataUrl: canvas.toDataURL("image/png"),
+                        width: canvas.width / 2,
+                        height: canvas.height / 2,
+                    };
                 });
-                y += 20;
-                doc.setFont("helvetica", "normal");
+            };
+
+            if (incomeChartRef.current && expenseChartRef.current) {
+                const incomeImg = await captureChart(incomeChartRef);
+                doc.setFontSize(14);
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor("#333");
+                doc.text("Income Chart", margin, y);
+                y += 10;
+
+                const incomeWidth = pageWidth * 0.7;
+                const incomeHeight = (incomeImg.height / incomeImg.width) * incomeWidth * 0.7;
+                const incomeX = (pageWidth - incomeWidth) / 2;
+                doc.addImage(incomeImg.dataUrl, "PNG", incomeX, y, incomeWidth, incomeHeight);
+                y += incomeHeight + 10;
+
+                const expenseImg = await captureChart(expenseChartRef);
+                doc.text("Expense Chart", margin, y);
+                y += 10;
+
+                const expenseWidth = pageWidth * 0.7;
+                const expenseHeight = (expenseImg.height / expenseImg.width) * expenseWidth * 0.7;
+                const expenseX = (pageWidth - expenseWidth) / 2;
+                doc.addImage(expenseImg.dataUrl, "PNG", expenseX, y, expenseWidth, expenseHeight);
+                y += expenseHeight + 10;
+            }
+
+            const topIncome = getTopCategories(transactions, "income");
+            const topExpenses = getTopCategories(transactions, "expense");
+
+            const tableWidth = pageWidth - margin * 2;
+            const colWidth = tableWidth / 2 - 10;
+
+            doc.setFontSize(16);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor("#000");
+            doc.text("Top Categories", pageWidth / 2, y, { align: "center" });
+            y += 24;
+
+            const drawCategoryTable = (title, data, xStart, startY) => {
+                const rowHeight = 18;
+                let yPos = startY;
+
+                doc.setFontSize(13);
+                doc.setFillColor("#3b82f6");
+                doc.setTextColor("#fff");
+                doc.roundedRect(xStart, yPos - 14, colWidth, rowHeight, 4, 4, "F");
+                doc.text(title, xStart + 10, yPos - 1);
+
+                yPos += 12;
+
                 doc.setFontSize(11);
-            }
+                doc.setFont("helvetica", "normal");
+                data.forEach(([category, amount], index) => {
+                    const isEven = index % 2 === 0;
+                    if (isEven) {
+                        doc.setFillColor("#f1f5f9");
+                        doc.rect(xStart, yPos - 10, colWidth, rowHeight, "F");
+                    }
+                    doc.setTextColor("#000");
+                    doc.text(`${index + 1}. ${category}`, xStart + 8, yPos + 4);
+                    doc.text(formatCurrency(amount), xStart + colWidth - 8, yPos + 4, {
+                        align: "right",
+                    });
+                    yPos += rowHeight;
+                });
+            };
 
-            if (rowAlt) {
-                doc.setFillColor("#f1f5f9");
-                doc.rect((pageWidth - tableTotalWidth) / 2, y - 12, tableTotalWidth, 18, "F");
-            }
+            const tableStartY = y;
+            drawCategoryTable("Income", topIncome, margin, tableStartY);
+            drawCategoryTable("Expenses", topExpenses, margin + colWidth + 20, tableStartY);
+            y +=
+                (topIncome.length > topExpenses.length ? topIncome.length : topExpenses.length) *
+                    18 +
+                36;
 
-            const dateStr = format(new Date(txn.date), "yyyy-MM-dd");
-            const category =
-                txn.category === "Other" && txn.customCategory ? txn.customCategory : txn.category;
-            const type = txn.type.charAt(0).toUpperCase() + txn.type.slice(1);
-            const amount = formatCurrency(txn.amount);
+            doc.setFontSize(16);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor("#000");
+            doc.text("Transactions", pageWidth / 2, y, { align: "center" });
+            y += 24;
 
-            x = (pageWidth - tableTotalWidth) / 2;
-            [dateStr, category, type, amount].forEach((cell, i) => {
-                doc.setTextColor("#000");
-                doc.text(cell.toString(), x + 2, y);
+            const headers = ["Date", "Category", "Type", "Amount"];
+            const colWidths = [80, 180, 80, 80];
+            const tableTotalWidth = colWidths.reduce((a, b) => a + b);
+            let x = (pageWidth - tableTotalWidth) / 2;
+            doc.setFontSize(12);
+            doc.setTextColor("#fff");
+            doc.setFillColor("#3b82f6");
+            doc.rect(x, y - 12, tableTotalWidth, 20, "F");
+            headers.forEach((header, i) => {
+                doc.text(header, x + 2, y);
                 x += colWidths[i];
             });
+            y += 20;
+            y += 4;
 
-            y += 18;
-            rowAlt = !rowAlt;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(11);
+            let rowAlt = false;
+            for (const txn of transactions) {
+                if (y > maxY - 30) {
+                    addPageNumber(pageNum);
+                    doc.addPage();
+                    pageNum++;
+                    y = 40;
+                    x = (pageWidth - tableTotalWidth) / 2;
+                    doc.setFontSize(12);
+                    doc.setTextColor("#fff");
+                    doc.setFillColor("#3b82f6");
+                    doc.rect(x, y - 12, tableTotalWidth, 20, "F");
+                    headers.forEach((header, i) => {
+                        doc.text(header, x + 2, y);
+                        x += colWidths[i];
+                    });
+                    y += 20;
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(11);
+                }
+
+                if (rowAlt) {
+                    doc.setFillColor("#f1f5f9");
+                    doc.rect((pageWidth - tableTotalWidth) / 2, y - 12, tableTotalWidth, 18, "F");
+                }
+
+                const dateStr = format(new Date(txn.date), "yyyy-MM-dd");
+                const category =
+                    txn.category === "Other" && txn.customCategory
+                        ? txn.customCategory
+                        : txn.category;
+                const type = txn.type.charAt(0).toUpperCase() + txn.type.slice(1);
+                const amount = formatCurrency(txn.amount);
+
+                x = (pageWidth - tableTotalWidth) / 2;
+                [dateStr, category, type, amount].forEach((cell, i) => {
+                    doc.setTextColor("#000");
+                    doc.text(cell.toString(), x + 2, y);
+                    x += colWidths[i];
+                });
+
+                y += 18;
+                rowAlt = !rowAlt;
+            }
+
+            addPageNumber(pageNum);
+            doc.save("Financial_Report.pdf");
+        } catch (error) {
+            console.error("Error generating report:", error);
         }
-
-        addPageNumber(pageNum);
-        doc.save("Financial_Report.pdf");
     };
 
     return (
